@@ -1,0 +1,37 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Introduction To R
+
+Taken from [R For Data Science](https://r4ds.had.co.nz/data-visualisation.html)
+
+```{r}
+options(scipen = 999) # No Scientific Notation
+library(tidyverse)
+
+ggplot(data = mpg) +
+  #geom_point(mapping = aes (x = displ, y = hwy, color = class))
+  geom_smooth(mapping = aes (x = displ, y = hwy, linetype = drv))
+```
+
+## Geoms
+Geoms are geometric objects that a plot uses to represent data. They can be bars, lines, plots etc.
+
+```{r}
+ggplot(data = mpg) +
+  geom_smooth(
+    mapping = aes(x = displ, y = hwy, color = drv), show.legend = FALSE
+    )
+```
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point() +
+  geom_smooth()
+
+ggplot() +
+  geom_point(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_smooth(data = mpg, mapping = aes(x = displ, y = hwy))
+```
