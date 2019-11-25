@@ -1,0 +1,435 @@
+---
+title: "Rockhurst Datasets"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Sharpe Data
+
+```{r}
+sharpe_data <- read.csv("C:/Users/prp12.000/GitHub-Repos/RStudio/datasets/sharpe_data.csv")
+View(sharpe_data)
+attach(sharpe_data)
+names(sharpe_data)
+dim(sharpe_data)
+str(sharpe_data)
+summary(sharpe_data)
+plot(risk, return) 
+cor(risk, return)
+#############################
+REGMODEL1 <- lm(return ~ risk)
+summary(REGMODEL1)
+anova(REGMODEL1)
+abline(REGMODEL1)
+fitted(REGMODEL1)
+```
+
+# DJIA & S&P 500
+
+```{r}
+djia_sp500_data <- read.csv("C:/Users/prp12.000/GitHub-Repos/RStudio/datasets/djia_sp500_data.csv")
+attach(djia_sp500_data)
+names(djia_sp500_data)
+#######################
+plot(djia, sp500)
+REG_MODEL <- lm(sp500~djia)
+summary(REG_MODEL)
+abline(REG_MODEL)
+anova(REG_MODEL)
+cor(djia, sp500)
+```
+
+# Advertising Data
+
+```{r}
+advertising_data <- read.csv("C:/Users/prp12.000/GitHub-Repos/RStudio/datasets/advertising_data.csv")
+attach(advertising_data)
+dim(advertising_data)
+names(advertising_data)
+summary(advertising_data)
+#############################
+REG1 <- lm(sales~TV)
+summary(REG1)
+anova(REG1)
+#############################
+REG2 <- lm(sales~radio)
+summary(REG2)
+anova(REG2)
+#############################
+REG3 <- lm(sales~newspaper)
+summary(REG3)
+anova(REG3)
+#################################
+REG4 <- lm(sales~TV+radio+newspaper)
+summary(REG4)
+anova(REG4)
+#################################
+cor(advertising_data)
+```
+
+# Toyota Carolla 
+
+```{r}
+toyota_corolla_data <- read.csv("C:/Users/prp12.000/GitHub-Repos/RStudio/datasets/toyota_corolla_data.csv")
+attach(toyota_corolla_data)
+library(psych)
+library(Metrics)
+options(scipen = 999)
+
+# <-- EDA -->
+library(psych)
+describe(toyota_corolla_data)
+
+# <-- CREATING TRAINING & TEST SET -->
+set.seed(1234)
+USABLE_DATA <- toyota_corolla_data[c(-1, -2, -6, -8,-11, -15)]
+
+RANDOMIZED_DATA <- USABLE_DATA[order(runif(1436)), ]
+RANDOMIZED_DATA
+
+TRAINING_SET <- RANDOMIZED_DATA[1:1000,]
+TRAINING_SET
+
+TEST_SET <- RANDOMIZED_DATA[1001:1436,]
+TEST_SET
+
+REG_MODEL <- lm(price~., data = TRAINING_SET)
+summary(REG_MODEL)
+
+# <-- COMPUTING RMSE OF TRAINING SET -->
+
+FITTED_VALUES <- fitted(REG_MODEL)
+
+library(Metrics)
+rmse(TRAINING_SET$price, FITTED_VALUES)
+
+# <-- RMSE OF TEST SET -->
+
+PREDICTIONS <- predict(REG_MODEL, TEST_SET)
+PREDICTIONS
+
+rmse(TEST_SET$price, PREDICTIONS)
+```
+
+# Airfares Data
+
+```{r}
+airfares_data <- read.csv("C:/Users/prp12.000/GitHub-Repos/RStudio/datasets/airfares_data.csv")
+## <-- EXPLORATORY DATA ANALYSIS --> ##
+attach(airfares_data)
+dim(airfares_data)
+str(airfares_data)
+library(psych)
+describe(airfares_data)
+
+CORRELATION_DATA <- data.frame(COUPON, NEW, HI, S_INCOME, 
+                   E_INCOME, S_POP, E_POP, DISTANCE,
+                   PAX, FARE)
+
+COR_MATRIX <- cor(CORRELATION_DATA)
+COR_MATRIX
+
+CORRELATION_MATRIX <- round(COR_MATRIX, 2)
+CORRELATION_MATRIX
+
+## <-- FULL REGRESSION MODEL --> ##
+options(scipen = 999)
+FULL_REG_MODEL <- lm(FARE ~ COUPON + NEW + VACATION + SW + HI +
+                    S_INCOME + E_INCOME + S_POP + E_POP + SLOT + GATE +
+                    DISTANCE + PAX)
+
+summary(FULL_REG_MODEL)
+
+## <-- REG_SUBSETS --> ##
+
+library(leaps)
+REG_SUBSETS <- regsubsets(FARE ~ COUPON + NEW + VACATION + SW + HI + 
+						S_INCOME + E_INCOME + S_POP + E_POP + 
+						SLOT + GATE + DISTANCE + PAX, 
+						data = airfares_data, 
+						nvmax = 13
+						)
+
+summary(REG_SUBSETS)
+REG_SUMMARY <- summary(REG_SUBSETS)
+REG_SUMMARY$adjr2
+
+## <-- Best Model --> ##
+BEST_4_VARIABLE_MODEL <- lm(FARE ~ VACATION + SW + HI + DISTANCE)
+summary(BEST_4_VARIABLE_MODEL)
+```
+
+# Occupational Prestige
+
+```{r}
+occupational_prestige_data <- read.csv("C:/Users/prp12.000/GitHub-Repos/RStudio/datasets/occupational_prestige_data.csv")
+## <-- Initialize Workspace --> ##
+attach(occupational_prestige_data)
+describe(occupational_prestige_data)
+
+min(prestige)
+which(prestige == "14.8")
+max(prestige)
+which(prestige == "87.2")
+
+## <-- MODEL_1 --> ##
+MODEL_1 <- lm(prestige ~ education + income + 
+						percentage_of_women + professional
+						)
+summary(MODEL_1)
+
+## <-- PRESTIGE_DATA --> ##
+library(dplyr)
+PRESTIGE_DATA <- data.frame(select(occupational_prestige_data,
+                                 prestige, education, income,
+                                 percentage_of_women))
+
+Z_PRESTIGE_DATA <- data.frame(scale(PRESTIGE_DATA))
+describe(Z_PRESTIGE_DATA)
+
+## <-- MODEL_2 --> ##
+
+MODEL_2 <- lm(prestige ~ education + income + percentage_of_women, data = Z_PRESTIGE_DATA)
+summary(MODEL_2)
+
+STANDARDIZED_AND_UNSTANDARDIZED_DATA <- data.frame(Z_PRESTIGE_DATA, professional)
+STANDARDIZED_AND_UNSTANDARDIZED_DATA
+
+## <-- MODEL_3 --> ##
+MODEL_3 <- lm(prestige ~ education + income + percentage_of_women + professional, 
+            data = STANDARDIZED_AND_UNSTANDARDIZED_DATA)
+
+summary(MODEL_3)
+```
+
+# Murder Data
+
+```{r}
+murder_data <- read.csv("C:/Users/prp12.000/GitHub-Repos/RStudio/datasets/murder_data.csv")
+# <-- Initialize Workspace -->
+attach(murder_data)
+library(leaps)
+library(psych)
+library(relaimpo)
+options(scipen = 999)
+options(digits = 4)
+
+# <-- EDA -->
+dim(murder_data)
+names(murder_data)
+psych(murder_data)
+describe(murder_data)
+cor(murder_data)
+
+# <-- REGRESSION SUBSETS -->
+REGSUBSETS <- regsubsets(murder_rate ~ population + illiteracy + income +
+                        frost + life_expectancy + hs_grad_rate + area, 
+					data = murder_data, 
+					nvmax = 7
+					)
+summary(REGSUBSETS)
+
+# <-- Summary of Regressions -->
+SUMMARY_OF_REGRESSIONS <- summary(REGSUBSETS)
+names(SUMMARY_OF_REGRESSIONS)
+
+SUMMARY_OF_REGRESSIONS$adjr2
+
+plot(SUMMARY_OF_REGRESSIONS$adjr2)
+
+REG_MODEL <- lm(murder_rate ~ population + illiteracy + 
+              frost + life_expectancy + area, 
+              data = murder_data)  
+summary(REG_MODEL)
+
+# <-- BETA REGRESSION -->
+SCALED_DATA <- scale(murder_data)
+describe(SCALED_DATA)
+
+Z_DATA <- data.frame(SCALED_DATA)
+Z_DATA
+
+Z_MODEL <- lm(murder_rate ~ population + illiteracy + frost +
+              life_expectancy + area,
+			data = Z_DATA
+			) 
+
+summary(Z_MODEL)
+
+##############################################
+
+calc.relimp(Z_MODEL, 
+			type = c("lmg", "last", "first", "pratt"),
+			 rela = TRUE
+				)
+```
+
+# Investment GDP Data
+
+```{r}
+investment_gdp_data <- read.csv("")
+## <-- Initialize Workspace --> ##
+attach(investment_gdp_data)
+options(scipen = 999)
+library(psych)
+describe(investment_gdp_data)
+
+## <-- MODEL IN TRILLIONS --> ##
+REG_MODEL1 <- lm(gross_private_domestic_investment~gdp)
+summary(REG_MODEL1)
+
+## <-- MODEL IN BILLIONS --> ##
+GPDI <- (gross_private_domestic_investment*1000)
+GPDI
+GDP <- (gdp*1000)
+GDP
+REG_MODEL2 <- lm(GPDI~GDP)
+summary(REG_MODEL2)
+```
+
+# Stock Volume Data
+
+```{r}
+## <-- Initialize Workspace --> ##
+stock_volume_data <- read.csv("C:/Users/prp12.000/GitHub-Repos/RStudio/datasets/stock_volume_data.csv")
+attach(stock_volume_data)
+options(scipen = 999)
+
+## <-- Model 1 --> ##
+MODEL_1 <- lm(stock_volume ~ stock_price_1 + stock_price_2)
+summary(MODEL_1)
+
+plot(stock_price_1, stock_price_2)
+cor(stock_price_1, stock_price_2)
+```
+
+# Affairs Data
+
+```{r}
+affairs_data <- read.csv("C:/Users/prp12.000/GitHub-Repos/RStudio/datasets/affairs_data.csv")
+attach(affairs_data)
+names(affairs_data)
+str(affairs_data)
+options(scipen = 999)
+
+################################################
+library(psych)
+describe(affairs_data)
+FREQUENCY_TABLE <- table(number_affairs)
+FREQUENCY_TABLE
+PROBABILITY_TABLE <- prop.table(FREQUENCY_TABLE)
+PROBABILITY_TABLE
+
+##################LOGISTIC REGRESSION MODEL######
+
+FULL_MODEL <- glm(YNAFFAIRS~male+age+years_married+children+
+                  religious+education+occupation+marriage_rating, 
+                data = affairs_data, family=binomial())
+summary(FULL_MODEL)
+
+
+REDUCED_MODEL <- glm(YNAFFAIRS~age+years_married+religious+marriage_rating, 
+                   data = affairs_data, family=binomial())
+summary(REDUCED_MODEL)
+
+
+coef(REDUCED_MODEL)
+exp(coef(REDUCED_MODEL)) ####This tranforms regression coefficients into Odds### 
+
+#########################################################
+LOGITS <- data.frame(predict(REDUCED_MODEL))
+LOGITS
+
+ODDS <- data.frame(exp(LOGITS))
+ODDS
+
+PROBABILITY <- data.frame(ODDS/(1 + ODDS))
+PROBABILITY
+
+min(PROBABILITY)
+max(PROBABILITY)
+
+describe(PROBABILITY)
+
+############CONFUSION MATRIX###########
+
+ACTUAL_STATE <- ifelse(number_affairs > 0, "unfaithful", "faithful")
+ACTUAL_STATE
+
+PREDICTED_STATE <- ifelse(PROBABILITY > .50, "UNFAITHFUL", "FAITHFUL")
+PREDICTED_STATE
+
+COMPARISON <- data.frame(ACTUAL_STATE, PREDICTED_STATE)
+
+TABLE <- table(COMPARISON)
+TABLE
+
+CONFUSION_MATRIX <- prop.table(TABLE)
+CONFUSION_MATRIX
+
+###############LDA MODEL ###########################
+
+library(DiscriMiner)
+LDA_DATASET <- data.frame(ACTUAL_STATE, age, years_married,religious, 
+                         marriage_rating)
+
+LDA_MODEL <- linDA((LDA_DATASET) [,2:5],ACTUAL_STATE)
+summary(LDA_MODEL)
+
+LDA_MODEL$functions
+LDA_MODEL$scores
+LDA_MODEL$classification
+LDA_MODEL$confusion
+
+LDA_TABLE <- LDA_MODEL$confusion
+LDA_CONFUSION_MATRIX <- prop.table(LDA_TABLE)
+LDA_CONFUSION_MATRIX
+```
+
+# Credit Default Data
+
+```{r}
+credit_default_data <- read.csv("C:/Users/prp12.000/GitHub-Repos/RStudio/datasets/credit_default_data.csv")
+library(psych)
+library(DiscriMiner)
+library(plyr)
+library(outliers)
+options(scipen = 999)
+######################################################
+dim(credit_default_data)
+names(credit_default_data)
+str(credit_default_data)
+attach(credit_default_data)
+describe(credit_default_data)
+
+table(default)
+outlier(balance)
+outlier(income)
+####################LOGIT MODEL############################
+LOGIT_MODEL <- glm(default~student+balance+income, data = credit_default_data, 
+                 family = binomial())
+
+summary(LOGIT_MODEL)
+predict(LOGIT_MODEL)
+ODDS <- exp(predict(LOGIT_MODEL))
+ODDS
+
+PROB <- (ODDS)/(1 + ODDS)
+PROBABILITY <- data.frame(PROB*100)
+describe(PROBABILITY)
+
+#####################LDA MODEL########################
+library(DiscriMiner)
+contrasts(as.factor(default))
+
+LDA_MODEL <- linDA(credit_default_data[,3:5], credit_default_data[,2])
+LDA_MODEL
+LDA_MODEL$scores
+LDA_MODEL$classification
+
+COMPARISON <- data.frame(credit_default_data$default, 
+                       LDA_MODEL$classification)
+COMPARISON
+table(COMPARISON)
+```
